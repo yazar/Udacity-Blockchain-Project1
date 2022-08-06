@@ -68,19 +68,17 @@ class Blockchain {
             block.time = new Date().getTime().toString().slice(0,-3);
             block.height = height + 1;
 
-            if(height > 0)
+            if(height >= 0)
             {
                 block.previousBlockHash = self.chain[height].hash;
-                block.hash = SHA256(JSON.stringify(block)).toString();
             }
-            else
-            {
-                
-                block.hash = SHA256(JSON.stringify(block)).toString();
-            }
+
+            block.hash = SHA256(JSON.stringify(block)).toString();
 
             self.chain.push(block);
             self.height = block.height;
+
+            await self.validateChain();
 
             resolve(block);
         });
@@ -138,8 +136,6 @@ class Blockchain {
             {
                 reject("error on submit");
             }
-
-            
         });
     }
 
@@ -192,7 +188,7 @@ class Blockchain {
                 let data = b.getBData();
                 if(data.owner == address && data != "Genesis block")
                 {
-                    stars.push(data.star);
+                    stars.push(data);
                 }
             })
 
@@ -218,9 +214,10 @@ class Blockchain {
                 }
                 if(b.height > 0)
                     {
+
                         let bpHash = b.previousBlockHash;
                         let pHash = self.getBlockByHeight(b.height-1).hash;
-                        if(bHash != pHash)
+                        if(bpHash != pHash)
                         {
                             errorLog.push(`error ${b}`);
                         }
